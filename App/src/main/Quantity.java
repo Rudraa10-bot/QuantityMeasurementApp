@@ -1,22 +1,23 @@
+package main;
+
 import java.util.Objects;
 
 public class Quantity<U extends IMeasurable> {
 
     private static final double EPSILON = 1e-9;
 
+    // UC12 asks rounding subtraction results to 2 decimals
+    private static final int SUBTRACTION_ROUNDING_SCALE = 2;
+
     private final double value;
     private final U unit;
 
-    /**
-     * Constructs a new Quantity with the given value and unit.
-     *
-     * @param value the numerical measurement value
-     * @param unit  the measurement unit (must not be null)
-     * @throws IllegalArgumentException if unit is null
-     */
     public Quantity(double value, U unit) {
         if (unit == null) {
             throw new IllegalArgumentException("Unit cannot be null.");
+        }
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Value must be finite (not NaN/Infinity).");
         }
         this.value = value;
         this.unit = unit;
@@ -30,54 +31,121 @@ public class Quantity<U extends IMeasurable> {
         return unit;
     }
 
-    /**
-     * Converts this quantity to the specified target unit.
-     *
-     * @param targetUnit the unit to convert to
-     * @return a new Quantity in the target unit
-     */
     public Quantity<U> convertTo(U targetUnit) {
+        if (targetUnit == null) {
+            throw new IllegalArgumentException("Target unit cannot be null.");
+        }
+        // Allow converting only within same category (runtime safety for raw type usage)
+        if (!this.unit.getClass().equals(targetUnit.getClass())) {
+            throw new IllegalArgumentException("Incompatible unit category conversion.");
+        }
+
         double baseValue = unit.convertToBaseUnit(value);
         double convertedValue = targetUnit.convertFromBaseUnit(baseValue);
         return new Quantity<>(convertedValue, targetUnit);
     }
 
-    /**
-     * Adds another quantity to this quantity.
-     * Result is expressed in this quantity's unit (implicit target unit).
-     *
-     * @param other the other quantity to add
-     * @return a new Quantity representing the sum
-     */
     public Quantity<U> add(Quantity<U> other) {
         return add(other, this.unit);
     }
 
-    /**
-     * Adds another quantity to this quantity with an explicit target unit.
-     *
-     * @param other      the other quantity to add
-     * @param targetUnit the unit for the result
-     * @return a new Quantity representing the sum in the target unit
-     */
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
+        validateOther(other);
+        validateTargetUnit(targetUnit);
+
         double thisBase  = this.unit.convertToBaseUnit(this.value);
         double otherBase = other.unit.convertToBaseUnit(other.value);
         double sumBase   = thisBase + otherBase;
+
         double resultValue = targetUnit.convertFromBaseUnit(sumBase);
         return new Quantity<>(resultValue, targetUnit);
     }
 
+    // =========================
+    // UC12: SUBTRACTION
+    // =========================
+
+    /** Subtracts other from this, result in this.unit (implicit target unit). */
+    public Quantity<U> subtract(Quantity<U> other) {
+        return subtract(other, this.unit);
+    }
+
+    /** Subtracts other from this, result expressed in targetUnit. */
+    public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+        validateOther(other);
+        validateTargetUnit(targetUnit);
+
+        double thisBase  = this.unit.convertToBaseUnit(this.value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+        double diffBase  = thisBase - otherBase;
+
+        double resultValue = targetUnit.convertFromBaseUnit(diffBase);
+
+        // UC12: round subtraction results to 2 decimals
+        resultValue = round(resultValue, SUBTRACTION_ROUNDING_SCALE);
+
+        return new Quantity<>(resultValue, targetUnit);
+    }
+
+    // =========================
+    // UC12: DIVISION
+    // =========================
+
     /**
-     * Checks equality between this and another object.
-     * Two quantities are equal if and only if:
-     *  - They are the same object (reflexive), OR
-     *  - The other object is a Quantity of the SAME unit type class
-     *    AND their base-unit values are within epsilon tolerance.
-     *
-     * @param obj the object to compare
-     * @return true if logically equal, false otherwise
+     * Divides this quantity by other quantity of same category.
+     * Returns a dimensionless scalar ratio (double).
      */
+    public double divide(Quantity<U> other) {
+        validateOther(other);
+
+        double thisBase  = this.unit.convertToBaseUnit(this.value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+
+        if (Math.abs(otherBase) < EPSILON) {
+            throw new ArithmeticException("Division by zero quantity is not allowed.");
+        }
+        return thisBase / otherBase;
+    }
+
+    // =========================
+    // Validation helpers (UC12)
+    // =========================
+
+    private void validateOther(Quantity<U> other) {
+        if (other == null) {
+            throw new IllegalArgumentException("Other quantity cannot be null.");
+        }
+        if (other.unit == null) {
+            throw new IllegalArgumentException("Other quantity unit cannot be null.");
+        }
+        if (!Double.isFinite(other.value)) {
+            throw new IllegalArgumentException("Other quantity value must be finite.");
+        }
+
+        // Runtime cross-category safety (important if raw types are used)
+        if (!this.unit.getClass().equals(other.unit.getClass())) {
+            throw new IllegalArgumentException("Incompatible quantity categories.");
+        }
+    }
+
+    private void validateTargetUnit(U targetUnit) {
+        if (targetUnit == null) {
+            throw new IllegalArgumentException("Target unit cannot be null.");
+        }
+        if (!this.unit.getClass().equals(targetUnit.getClass())) {
+            throw new IllegalArgumentException("Target unit is not in the same category.");
+        }
+    }
+
+    private static double round(double value, int decimals) {
+        double factor = Math.pow(10, decimals);
+        return Math.round(value * factor) / factor;
+    }
+
+    // =========================
+    // equals/hashCode/toString
+    // =========================
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -86,7 +154,6 @@ public class Quantity<U extends IMeasurable> {
 
         Quantity<?> other = (Quantity<?>) obj;
 
-        // Cross-category type safety: unit classes must match
         if (!this.unit.getClass().equals(other.unit.getClass())) {
             return false;
         }
@@ -100,7 +167,6 @@ public class Quantity<U extends IMeasurable> {
     @Override
     public int hashCode() {
         double baseValue = unit.convertToBaseUnit(value);
-        // Round to avoid floating-point inconsistencies in hash
         long rounded = Math.round(baseValue / EPSILON);
         return Objects.hash(unit.getClass(), rounded);
     }
