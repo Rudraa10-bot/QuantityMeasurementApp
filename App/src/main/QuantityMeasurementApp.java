@@ -1,94 +1,121 @@
 package main;
 
 /**
- * QuantityMeasurementApp - UC10
+ * QuantityMeasurementApp - UC9
  *
- * Generic demonstration class.
+ * Demonstrates:
+ * - Weight equality
+ * - Weight conversion
+ * - Weight addition
  *
- * Supports:
- * - Equality
- * - Conversion
- * - Addition
- *
- * for ANY IMeasurable category.
+ * Length functionality from UC8 remains supported.
  */
 public class QuantityMeasurementApp {
 
     /**
-     * Generic equality demonstration.
+     * Weight equality demo
      */
-    public static <U extends IMeasurable>
-    boolean demonstrateEquality(
-            Quantity<U> quantity1,
-            Quantity<U> quantity2) {
+    public static boolean demonstrateWeightEquality(
+            Weight weight1,
+            Weight weight2) {
 
-        return quantity1.equals(quantity2);
+        boolean result = weight1.equals(weight2);
+
+        System.out.println("The two weight measurements are "
+                + (result ? "equal." : "not equal."));
+
+        return result;
     }
 
     /**
-     * Generic conversion demonstration.
+     * Weight comparison demo using raw values.
      */
-    public static <U extends IMeasurable>
-    Quantity<U> demonstrateConversion(
-            Quantity<U> quantity,
-            U targetUnit) {
+    public static boolean demonstrateWeightComparison(
+            double value1,
+            WeightUnit unit1,
+            double value2,
+            WeightUnit unit2) {
 
-        return quantity.convertTo(targetUnit);
+        Weight weight1 = new Weight(value1, unit1);
+        Weight weight2 = new Weight(value2, unit2);
+
+        return demonstrateWeightEquality(weight1, weight2);
     }
 
     /**
-     * Generic addition demonstration.
+     * Weight conversion demo.
      */
-    public static <U extends IMeasurable>
-    Quantity<U> demonstrateAddition(
-            Quantity<U> quantity1,
-            Quantity<U> quantity2) {
+    public static Weight demonstrateWeightConversion(
+            double value,
+            WeightUnit fromUnit,
+            WeightUnit toUnit) {
 
-        return quantity1.add(quantity2);
+        Weight weight = new Weight(value, fromUnit);
+
+        return weight.convertTo(toUnit);
     }
 
     /**
-     * Generic addition with target unit.
+     * Overloaded conversion demo.
      */
-    public static <U extends IMeasurable>
-    Quantity<U> demonstrateAddition(
-            Quantity<U> quantity1,
-            Quantity<U> quantity2,
-            U targetUnit) {
+    public static Weight demonstrateWeightConversion(
+            Weight weight,
+            WeightUnit toUnit) {
 
-        return quantity1.add(quantity2, targetUnit);
+        return weight.convertTo(toUnit);
+    }
+
+    /**
+     * Weight addition demo (implicit target unit).
+     */
+    public static Weight demonstrateWeightAddition(
+            Weight weight1,
+            Weight weight2) {
+
+        return weight1.add(weight2);
+    }
+
+    /**
+     * Weight addition demo (explicit target unit).
+     */
+    public static Weight demonstrateWeightAddition(
+            Weight weight1,
+            Weight weight2,
+            WeightUnit targetUnit) {
+
+        return weight1.add(weight2, targetUnit);
     }
 
     public static void main(String[] args) {
 
-        // Length demo
-        Quantity<LengthUnit> feet =
-                new Quantity<>(1.0, LengthUnit.FEET);
+        System.out.println("=== UC9 Weight Measurement Demo ===");
 
-        Quantity<LengthUnit> inches =
-                new Quantity<>(12.0, LengthUnit.INCHES);
+        Weight oneKg =
+                new Weight(1.0, WeightUnit.KILOGRAM);
 
-        System.out.println(feet.equals(inches));
+        Weight thousandGram =
+                new Weight(1000.0, WeightUnit.GRAM);
 
+        Weight pounds =
+                new Weight(2.20462, WeightUnit.POUND);
+
+        // Equality
+        System.out.println(oneKg.equals(thousandGram));
+
+        // Conversion
         System.out.println(
-                feet.convertTo(LengthUnit.INCHES));
+                oneKg.convertTo(WeightUnit.GRAM));
 
+        // Addition
         System.out.println(
-                feet.add(inches, LengthUnit.FEET));
+                oneKg.add(thousandGram));
 
-        // Weight demo
-        Quantity<WeightUnit> kg =
-                new Quantity<>(1.0, WeightUnit.KILOGRAM);
-
-        Quantity<WeightUnit> grams =
-                new Quantity<>(1000.0, WeightUnit.GRAM);
-
-        System.out.println(kg.equals(grams));
-
+        // Explicit target unit
         System.out.println(
-                kg.convertTo(WeightUnit.GRAM));
+                oneKg.add(thousandGram, WeightUnit.GRAM));
 
+        // Pound conversion
         System.out.println(
-                kg.add(grams, WeightUnit.KILOGRAM));
+                pounds.convertTo(WeightUnit.KILOGRAM));
     }
 }
