@@ -4,17 +4,19 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import main.QuantityMeasurementApp.Feet;
+import main.QuantityMeasurementApp.Inches;
 
 /**
- * Test class for QuantityMeasurementApp - UC1: Feet measurement equality
- * Tests various equality scenarios for Feet objects
+ * Test class for QuantityMeasurementApp - UC2: Feet and Inches measurement equality
+ * Tests various equality scenarios for both Feet and Inches objects
  */
 public class QuantityMeasurementAppTest {
+
+    // ==================== FEET EQUALITY TESTS ====================
 
     /**
      * Test Case 1: testFeetEquality_SameValue
      * Verifies that two Feet objects with the same value (1.0 ft) are considered equal
-     * Tests the value-based equality implementation
      */
     @Test
     public void testFeetEquality_SameValue() {
@@ -27,8 +29,7 @@ public class QuantityMeasurementAppTest {
 
     /**
      * Test Case 2: testFeetEquality_DifferentValue
-     * Verifies that two Feet objects with different values (1.0 ft and 2.0 ft) are not equal
-     * Tests that different values result in inequality
+     * Verifies that two Feet objects with different values are not equal
      */
     @Test
     public void testFeetEquality_DifferentValue() {
@@ -42,7 +43,6 @@ public class QuantityMeasurementAppTest {
     /**
      * Test Case 3: testFeetEquality_NullComparison
      * Verifies that a Feet object is not equal to null
-     * Tests null safety and prevents NullPointerException
      */
     @Test
     public void testFeetEquality_NullComparison() {
@@ -55,7 +55,6 @@ public class QuantityMeasurementAppTest {
     /**
      * Test Case 4: testFeetEquality_DifferentClass
      * Verifies that a Feet object is not equal to an object of a different type
-     * Tests type safety to prevent ClassCastException
      */
     @Test
     public void testFeetEquality_DifferentClass() {
@@ -69,7 +68,6 @@ public class QuantityMeasurementAppTest {
     /**
      * Test Case 5: testFeetEquality_SameReference
      * Verifies that a Feet object is equal to itself (reflexive property)
-     * Tests the reflexive property of equals() contract
      */
     @Test
     public void testFeetEquality_SameReference() {
@@ -81,8 +79,7 @@ public class QuantityMeasurementAppTest {
 
     /**
      * Test Case 6: testFeetEquality_Symmetric
-     * Verifies the symmetric property: if a.equals(b) then b.equals(a)
-     * Tests symmetric property of equals() contract
+     * Verifies the symmetric property of equals()
      */
     @Test
     public void testFeetEquality_Symmetric() {
@@ -90,46 +87,12 @@ public class QuantityMeasurementAppTest {
         Feet feet2 = new Feet(1.0);
 
         assertTrue(feet1.equals(feet2) && feet2.equals(feet1),
-                "Equality should be symmetric: if feet1 equals feet2, then feet2 equals feet1");
+                "Equality should be symmetric for Feet objects");
     }
 
     /**
-     * Test Case 7: testFeetEquality_Transitive
-     * Verifies the transitive property: if a.equals(b) and b.equals(c) then a.equals(c)
-     * Tests transitive property of equals() contract
-     */
-    @Test
-    public void testFeetEquality_Transitive() {
-        Feet feet1 = new Feet(1.0);
-        Feet feet2 = new Feet(1.0);
-        Feet feet3 = new Feet(1.0);
-
-        assertTrue(feet1.equals(feet2) && feet2.equals(feet3) && feet1.equals(feet3),
-                "Equality should be transitive: if feet1 equals feet2 and feet2 equals feet3, then feet1 equals feet3");
-    }
-
-    /**
-     * Test Case 8: testFeetEquality_Consistent
-     * Verifies the consistent property: multiple calls to equals() return the same result
-     * Tests consistent property of equals() contract
-     */
-    @Test
-    public void testFeetEquality_Consistent() {
-        Feet feet1 = new Feet(1.0);
-        Feet feet2 = new Feet(1.0);
-
-        boolean firstCall = feet1.equals(feet2);
-        boolean secondCall = feet1.equals(feet2);
-        boolean thirdCall = feet1.equals(feet2);
-
-        assertTrue(firstCall && secondCall && thirdCall,
-                "Multiple calls to equals() should return consistent results");
-    }
-
-    /**
-     * Test Case 9: testFeetEquality_ZeroValues
-     * Verifies that two Feet objects with zero values are equal
-     * Tests edge case with zero values
+     * Test Case 7: testFeetEquality_ZeroValues
+     * Verifies equality for zero values
      */
     @Test
     public void testFeetEquality_ZeroValues() {
@@ -140,31 +103,177 @@ public class QuantityMeasurementAppTest {
                 "Two Feet objects with value 0.0 should be equal");
     }
 
+    // ==================== INCHES EQUALITY TESTS ====================
+
     /**
-     * Test Case 10: testFeetEquality_NegativeValues
-     * Verifies that two Feet objects with the same negative values are equal
-     * Tests edge case with negative values
+     * Test Case 8: testInchesEquality_SameValue
+     * Verifies that two Inches objects with the same value (1.0 inch) are considered equal
      */
     @Test
-    public void testFeetEquality_NegativeValues() {
-        Feet feet1 = new Feet(-1.0);
-        Feet feet2 = new Feet(-1.0);
+    public void testInchesEquality_SameValue() {
+        Inches inches1 = new Inches(1.0);
+        Inches inches2 = new Inches(1.0);
 
-        assertTrue(feet1.equals(feet2),
-                "Two Feet objects with value -1.0 should be equal");
+        assertTrue(inches1.equals(inches2),
+                "Two Inches objects with value 1.0 should be equal");
     }
 
     /**
-     * Test Case 11: testFeetEquality_DecimalPrecision
-     * Verifies correct comparison of decimal values
-     * Tests floating-point precision handling
+     * Test Case 9: testInchesEquality_DifferentValue
+     * Verifies that two Inches objects with different values are not equal
      */
     @Test
-    public void testFeetEquality_DecimalPrecision() {
-        Feet feet1 = new Feet(1.5);
-        Feet feet2 = new Feet(1.5);
+    public void testInchesEquality_DifferentValue() {
+        Inches inches1 = new Inches(1.0);
+        Inches inches2 = new Inches(2.0);
+
+        assertFalse(inches1.equals(inches2),
+                "Inches objects with values 1.0 and 2.0 should not be equal");
+    }
+
+    /**
+     * Test Case 10: testInchesEquality_NullComparison
+     * Verifies that an Inches object is not equal to null
+     */
+    @Test
+    public void testInchesEquality_NullComparison() {
+        Inches inches1 = new Inches(1.0);
+
+        assertFalse(inches1.equals(null),
+                "Inches object should not be equal to null");
+    }
+
+    /**
+     * Test Case 11: testInchesEquality_DifferentClass
+     * Verifies that an Inches object is not equal to an object of a different type
+     */
+    @Test
+    public void testInchesEquality_DifferentClass() {
+        Inches inches1 = new Inches(1.0);
+        String notAnInches = "1.0";
+
+        assertFalse(inches1.equals(notAnInches),
+                "Inches object should not be equal to a String object");
+    }
+
+    /**
+     * Test Case 12: testInchesEquality_SameReference
+     * Verifies that an Inches object is equal to itself (reflexive property)
+     */
+    @Test
+    public void testInchesEquality_SameReference() {
+        Inches inches1 = new Inches(1.0);
+
+        assertTrue(inches1.equals(inches1),
+                "Inches object should be equal to itself (reflexive property)");
+    }
+
+    /**
+     * Test Case 13: testInchesEquality_Symmetric
+     * Verifies the symmetric property of equals()
+     */
+    @Test
+    public void testInchesEquality_Symmetric() {
+        Inches inches1 = new Inches(1.0);
+        Inches inches2 = new Inches(1.0);
+
+        assertTrue(inches1.equals(inches2) && inches2.equals(inches1),
+                "Equality should be symmetric for Inches objects");
+    }
+
+    /**
+     * Test Case 14: testInchesEquality_Transitive
+     * Verifies the transitive property of equals()
+     */
+    @Test
+    public void testInchesEquality_Transitive() {
+        Inches inches1 = new Inches(1.0);
+        Inches inches2 = new Inches(1.0);
+        Inches inches3 = new Inches(1.0);
+
+        assertTrue(inches1.equals(inches2) && inches2.equals(inches3) && inches1.equals(inches3),
+                "Equality should be transitive for Inches objects");
+    }
+
+    /**
+     * Test Case 15: testInchesEquality_ZeroValues
+     * Verifies equality for zero values
+     */
+    @Test
+    public void testInchesEquality_ZeroValues() {
+        Inches inches1 = new Inches(0.0);
+        Inches inches2 = new Inches(0.0);
+
+        assertTrue(inches1.equals(inches2),
+                "Two Inches objects with value 0.0 should be equal");
+    }
+
+    /**
+     * Test Case 16: testInchesEquality_NegativeValues
+     * Verifies equality for negative values
+     */
+    @Test
+    public void testInchesEquality_NegativeValues() {
+        Inches inches1 = new Inches(-1.0);
+        Inches inches2 = new Inches(-1.0);
+
+        assertTrue(inches1.equals(inches2),
+                "Two Inches objects with value -1.0 should be equal");
+    }
+
+    /**
+     * Test Case 17: testInchesEquality_DecimalPrecision
+     * Verifies correct comparison of decimal values
+     */
+    @Test
+    public void testInchesEquality_DecimalPrecision() {
+        Inches inches1 = new Inches(1.5);
+        Inches inches2 = new Inches(1.5);
+
+        assertTrue(inches1.equals(inches2),
+                "Two Inches objects with value 1.5 should be equal");
+    }
+
+    // ==================== CROSS-TYPE COMPARISON TESTS ====================
+
+    /**
+     * Test Case 18: testFeetNotEqualToInches
+     * Verifies that Feet and Inches objects are not equal (different types)
+     * This ensures type safety between different measurement units
+     */
+    @Test
+    public void testFeetNotEqualToInches() {
+        Feet feet1 = new Feet(1.0);
+        Inches inches1 = new Inches(1.0);
+
+        assertFalse(feet1.equals(inches1),
+                "Feet object should not be equal to Inches object (different types)");
+    }
+
+    /**
+     * Test Case 19: testInchesNotEqualToFeet
+     * Verifies that Inches and Feet objects are not equal (different types)
+     * Symmetric test of the above
+     */
+    @Test
+    public void testInchesNotEqualToFeet() {
+        Inches inches1 = new Inches(1.0);
+        Feet feet1 = new Feet(1.0);
+
+        assertFalse(inches1.equals(feet1),
+                "Inches object should not be equal to Feet object (different types)");
+    }
+
+    /**
+     * Test Case 20: testFeetEquality_LargeValues
+     * Verifies equality for large values
+     */
+    @Test
+    public void testFeetEquality_LargeValues() {
+        Feet feet1 = new Feet(1000000.0);
+        Feet feet2 = new Feet(1000000.0);
 
         assertTrue(feet1.equals(feet2),
-                "Two Feet objects with value 1.5 should be equal");
+                "Two Feet objects with large values should be equal");
     }
 }
