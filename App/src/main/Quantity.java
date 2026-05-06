@@ -1,13 +1,11 @@
 package main;
 
 import java.util.Objects;
+import java.util.function.DoubleBinaryOperator;
 
 public class Quantity<U extends IMeasurable> {
 
     private static final double EPSILON = 1e-9;
-
-    // UC12 asks rounding subtraction results to 2 decimals
-    private static final int SUBTRACTION_ROUNDING_SCALE = 2;
 
     private final double value;
     private final U unit;
@@ -31,11 +29,13 @@ public class Quantity<U extends IMeasurable> {
         return unit;
     }
 
+    // ------------------------------------------------------------
+    // Conversion (unchanged public API)
+    // ------------------------------------------------------------
     public Quantity<U> convertTo(U targetUnit) {
         if (targetUnit == null) {
             throw new IllegalArgumentException("Target unit cannot be null.");
         }
-        // Allow converting only within same category (runtime safety for raw type usage)
         if (!this.unit.getClass().equals(targetUnit.getClass())) {
             throw new IllegalArgumentException("Incompatible unit category conversion.");
         }
@@ -45,73 +45,84 @@ public class Quantity<U extends IMeasurable> {
         return new Quantity<>(convertedValue, targetUnit);
     }
 
+    // ------------------------------------------------------------
+    // UC13: Public arithmetic API (signatures unchanged)
+    // Internals now delegate to centralized helpers
+    // ------------------------------------------------------------
+
     public Quantity<U> add(Quantity<U> other) {
         return add(other, this.unit);
     }
 
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
-        validateOther(other);
-        validateTargetUnit(targetUnit);
+        validateArithmeticOperands(other, targetUnit, true);
 
-        double thisBase  = this.unit.convertToBaseUnit(this.value);
-        double otherBase = other.unit.convertToBaseUnit(other.value);
-        double sumBase   = thisBase + otherBase;
+        double resultBase = performBaseArithmetic(other, ArithmeticOperation.ADD);
+        double resultValue = targetUnit.convertFromBaseUnit(resultBase);
 
-        double resultValue = targetUnit.convertFromBaseUnit(sumBase);
+        // UC13: Round add/subtract results to 2 decimals
+        resultValue = roundToTwoDecimals(resultValue);
+
         return new Quantity<>(resultValue, targetUnit);
     }
 
-    // =========================
-    // UC12: SUBTRACTION
-    // =========================
-
-    /** Subtracts other from this, result in this.unit (implicit target unit). */
     public Quantity<U> subtract(Quantity<U> other) {
         return subtract(other, this.unit);
     }
 
-    /** Subtracts other from this, result expressed in targetUnit. */
     public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
-        validateOther(other);
-        validateTargetUnit(targetUnit);
+        validateArithmeticOperands(other, targetUnit, true);
 
-        double thisBase  = this.unit.convertToBaseUnit(this.value);
-        double otherBase = other.unit.convertToBaseUnit(other.value);
-        double diffBase  = thisBase - otherBase;
+        double resultBase = performBaseArithmetic(other, ArithmeticOperation.SUBTRACT);
+        double resultValue = targetUnit.convertFromBaseUnit(resultBase);
 
-        double resultValue = targetUnit.convertFromBaseUnit(diffBase);
-
-        // UC12: round subtraction results to 2 decimals
-        resultValue = round(resultValue, SUBTRACTION_ROUNDING_SCALE);
+        // UC13: Round add/subtract results to 2 decimals
+        resultValue = roundToTwoDecimals(resultValue);
 
         return new Quantity<>(resultValue, targetUnit);
     }
 
-    // =========================
-    // UC12: DIVISION
-    // =========================
-
-    /**
-     * Divides this quantity by other quantity of same category.
-     * Returns a dimensionless scalar ratio (double).
-     */
     public double divide(Quantity<U> other) {
-        validateOther(other);
-
-        double thisBase  = this.unit.convertToBaseUnit(this.value);
-        double otherBase = other.unit.convertToBaseUnit(other.value);
-
-        if (Math.abs(otherBase) < EPSILON) {
-            throw new ArithmeticException("Division by zero quantity is not allowed.");
-        }
-        return thisBase / otherBase;
+        // targetUnit not required for division
+        validateArithmeticOperands(other, null, false);
+        // UC13: division returns scalar (no unit conversion back)
+        return performBaseArithmetic(other, ArithmeticOperation.DIVIDE);
     }
 
-    // =========================
-    // Validation helpers (UC12)
-    // =========================
+    // ------------------------------------------------------------
+    // UC13: Centralized internal DRY logic
+    // ------------------------------------------------------------
 
-    private void validateOther(Quantity<U> other) {
+    private enum ArithmeticOperation {
+        ADD((a, b) -> a + b),
+        SUBTRACT((a, b) -> a - b),
+        DIVIDE((a, b) -> {
+            if (Math.abs(b) < EPSILON) {
+                throw new ArithmeticException("Division by zero quantity is not allowed.");
+            }
+            return a / b;
+        });
+
+        private final DoubleBinaryOperator op;
+
+        ArithmeticOperation(DoubleBinaryOperator op) {
+            this.op = op;
+        }
+
+        public double compute(double leftBase, double rightBase) {
+            return op.applyAsDouble(leftBase, rightBase);
+        }
+    }
+
+    /**
+     * Validates operands for arithmetic operations (add, subtract, divide).
+     * Ensures:
+     * - other is not null
+     * - category compatibility (same enum/unit class)
+     * - finiteness of both numeric values
+     * - targetUnit is validated only when required (add/subtract)
+     */
+    private void validateArithmeticOperands(Quantity<U> other, U targetUnit, boolean targetUnitRequired) {
         if (other == null) {
             throw new IllegalArgumentException("Other quantity cannot be null.");
         }
@@ -119,32 +130,41 @@ public class Quantity<U extends IMeasurable> {
             throw new IllegalArgumentException("Other quantity unit cannot be null.");
         }
         if (!Double.isFinite(other.value)) {
-            throw new IllegalArgumentException("Other quantity value must be finite.");
+            throw new IllegalArgumentException("Other quantity value must be finite (not NaN/Infinity).");
         }
 
-        // Runtime cross-category safety (important if raw types are used)
+        // Cross-category protection (important if raw types are used)
         if (!this.unit.getClass().equals(other.unit.getClass())) {
             throw new IllegalArgumentException("Incompatible quantity categories.");
         }
-    }
 
-    private void validateTargetUnit(U targetUnit) {
-        if (targetUnit == null) {
-            throw new IllegalArgumentException("Target unit cannot be null.");
+        if (targetUnitRequired) {
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit cannot be null.");
+            }
+            if (!this.unit.getClass().equals(targetUnit.getClass())) {
+                throw new IllegalArgumentException("Target unit is not in the same category.");
+            }
         }
-        if (!this.unit.getClass().equals(targetUnit.getClass())) {
-            throw new IllegalArgumentException("Target unit is not in the same category.");
-        }
     }
 
-    private static double round(double value, int decimals) {
-        double factor = Math.pow(10, decimals);
-        return Math.round(value * factor) / factor;
+    /**
+     * Converts both operands to base unit and performs the specified arithmetic operation in base units.
+     * Returns the base-unit result (for DIVIDE: scalar ratio).
+     */
+    private double performBaseArithmetic(Quantity<U> other, ArithmeticOperation operation) {
+        double thisBase  = this.unit.convertToBaseUnit(this.value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+        return operation.compute(thisBase, otherBase);
     }
 
-    // =========================
-    // equals/hashCode/toString
-    // =========================
+    private double roundToTwoDecimals(double val) {
+        return Math.round(val * 100.0) / 100.0;
+    }
+
+    // ------------------------------------------------------------
+    // equals / hashCode / toString (unchanged behavior)
+    // ------------------------------------------------------------
 
     @Override
     public boolean equals(Object obj) {
