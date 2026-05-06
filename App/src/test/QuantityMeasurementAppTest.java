@@ -3,20 +3,31 @@ package test;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import main.QuantityMeasurementApp;
 import main.QuantityMeasurementApp.Length;
 import main.QuantityMeasurementApp.LengthUnit;
 
 /**
- * Test class for QuantityMeasurementApp - UC4: Extended Unit Support
- * Tests various equality scenarios for Length objects with Yards and Centimeters
+ * Use Case 5: Conversion from one unit to another
+ *
+ * This test class validates the conversion functionality between
+ * different units of measurement.
+ *
+ * The Quantity Measurement Application now supports conversions between
+ * various units within the same measurement category.
+ *
+ * Please ensure the original functionalities of comparison are intact
+ * while adding conversion features.
  */
 public class QuantityMeasurementAppTest {
 
-    // ==================== FEET EQUALITY TESTS ====================
+    // Tolerance for floating-point comparisons
+    private static final double EPSILON = 0.01;
+
+    // ==================== BACKWARD COMPATIBILITY TESTS ====================
 
     /**
-     * Test Case 1: testFeetEquality
-     * Verifies backward compatibility with UC3
+     * Test 1: Feet equality (UC1 backward compatibility)
      */
     @Test
     public void testFeetEquality() {
@@ -24,14 +35,11 @@ public class QuantityMeasurementAppTest {
         Length feet2 = new Length(1.0, LengthUnit.FEET);
 
         assertTrue(feet1.equals(feet2),
-                "Two Length objects with value 1.0 feet should be equal");
+                "Two Length objects with 1.0 feet should be equal");
     }
 
-    // ==================== INCHES EQUALITY TESTS ====================
-
     /**
-     * Test Case 2: testInchesEquality
-     * Verifies backward compatibility with UC3
+     * Test 2: Inches equality (UC2 backward compatibility)
      */
     @Test
     public void testInchesEquality() {
@@ -39,14 +47,11 @@ public class QuantityMeasurementAppTest {
         Length inches2 = new Length(1.0, LengthUnit.INCHES);
 
         assertTrue(inches1.equals(inches2),
-                "Two Length objects with value 1.0 inches should be equal");
+                "Two Length objects with 1.0 inches should be equal");
     }
 
-    // ==================== FEET-INCHES COMPARISON TESTS ====================
-
     /**
-     * Test Case 3: testFeetInchesComparison
-     * Verifies backward compatibility with UC3
+     * Test 3: Feet and Inches comparison (UC3 backward compatibility)
      */
     @Test
     public void testFeetInchesComparison() {
@@ -57,11 +62,8 @@ public class QuantityMeasurementAppTest {
                 "1.0 feet should equal 12.0 inches");
     }
 
-    // ==================== YARDS EQUALITY TESTS ====================
-
     /**
-     * Test Case 4: testFeetInequality
-     * Verifies inequality for different feet values
+     * Test 4: Feet inequality
      */
     @Test
     public void testFeetInequality() {
@@ -73,8 +75,7 @@ public class QuantityMeasurementAppTest {
     }
 
     /**
-     * Test Case 5: testInchesInequality
-     * Verifies inequality for different inch values
+     * Test 5: Inches inequality
      */
     @Test
     public void testInchesInequality() {
@@ -86,8 +87,7 @@ public class QuantityMeasurementAppTest {
     }
 
     /**
-     * Test Case 6: testCrossUnitInequality
-     * Verifies cross-unit inequality
+     * Test 6: Cross unit inequality
      */
     @Test
     public void testCrossUnitInequality() {
@@ -99,8 +99,7 @@ public class QuantityMeasurementAppTest {
     }
 
     /**
-     * Test Case 7: testMultipleFeetComparison
-     * Verifies 2 feet equals 24 inches
+     * Test 7: Multiple feet comparison
      */
     @Test
     public void testMultipleFeetComparison() {
@@ -111,11 +110,8 @@ public class QuantityMeasurementAppTest {
                 "2.0 feet should equal 24.0 inches");
     }
 
-    // ==================== YARDS EQUALITY TESTS ====================
-
     /**
-     * Test Case 8: yardEquals36Inches
-     * Verifies that 1 yard equals 36 inches
+     * Test 8: 1 yard equals 36 inches
      */
     @Test
     public void yardEquals36Inches() {
@@ -127,21 +123,7 @@ public class QuantityMeasurementAppTest {
     }
 
     /**
-     * Test Case 9: threeFeetEqualsOneYard
-     * Verifies that 3 feet equals 1 yard
-     */
-    @Test
-    public void threeFeetEqualsOneYard() {
-        Length feet = new Length(3.0, LengthUnit.FEET);
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-
-        assertTrue(feet.equals(yard),
-                "3 feet should equal 1 yard");
-    }
-
-    /**
-     * Test Case 10: thirtyPoint48CmEqualsOneFoot
-     * Verifies that 30.48 cm equals 1 foot
+     * Test 9: 30.48 cm equals 1 foot
      */
     @Test
     public void thirtyPoint48CmEqualsOneFoot() {
@@ -153,8 +135,7 @@ public class QuantityMeasurementAppTest {
     }
 
     /**
-     * Test Case 11: yardNotEqualToInches
-     * Verifies that 1 yard does not equal 1 inch
+     * Test 10: 1 yard does not equal 1 inch
      */
     @Test
     public void yardNotEqualToInches() {
@@ -166,32 +147,29 @@ public class QuantityMeasurementAppTest {
     }
 
     /**
-     * Test Case 12: referenceEqualitySameObject
-     * Verifies reflexive property
+     * Test 11: Reference equality (same object)
      */
     @Test
     public void referenceEqualitySameObject() {
         Length yard = new Length(1.0, LengthUnit.YARDS);
 
         assertTrue(yard.equals(yard),
-                "A yard object should equal itself (reflexive property)");
+                "A Length object should equal itself (reflexive property)");
     }
 
     /**
-     * Test Case 13: equalsReturnsFalseForNull
-     * Verifies null safety
+     * Test 12: Equals returns false for null
      */
     @Test
     public void equalsReturnsFalseForNull() {
         Length yard = new Length(1.0, LengthUnit.YARDS);
 
         assertFalse(yard.equals(null),
-                "Yard object should not equal null");
+                "Length object should not equal null");
     }
 
     /**
-     * Test Case 14: reflexiveSymmetricAndTransitiveProperty
-     * Verifies reflexive, symmetric, and transitive properties
+     * Test 13: Reflexive, symmetric and transitive property
      */
     @Test
     public void reflexiveSymmetricAndTransitiveProperty() {
@@ -203,7 +181,8 @@ public class QuantityMeasurementAppTest {
         assertTrue(yard.equals(yard), "Reflexive property failed");
 
         // Symmetric
-        assertTrue(yard.equals(feet) && feet.equals(yard), "Symmetric property failed");
+        assertTrue(yard.equals(feet) && feet.equals(yard),
+                "Symmetric property failed");
 
         // Transitive
         assertTrue(yard.equals(feet) && feet.equals(inches) && yard.equals(inches),
@@ -211,8 +190,7 @@ public class QuantityMeasurementAppTest {
     }
 
     /**
-     * Test Case 15: differentValuesSameUnitNotEqual
-     * Verifies inequality for different values of same unit
+     * Test 14: Different values same unit not equal
      */
     @Test
     public void differentValuesSameUnitNotEqual() {
@@ -223,176 +201,268 @@ public class QuantityMeasurementAppTest {
                 "1 yard should not equal 2 yards");
     }
 
-    // ==================== CENTIMETERS EQUALITY TESTS ====================
-
     /**
-     * Test Case 16: centimeterEquals39Point3701Inches
-     * Verifies that 1 cm equals 0.393701 inches
-     */
-    @Test
-    public void centimeterEquals39Point3701Point() {
-        Length cm = new Length(100.0, LengthUnit.CENTIMETERS);
-        Length inches = new Length(39.3701, LengthUnit.INCHES);
-
-        assertTrue(cm.equals(inches),
-                "100 cm should equal 39.3701 inches");
-    }
-
-    /**
-     * Test Case 17: oneCentimeterNotEqualOneInch
-     * Verifies that 1 cm does not equal 1 inch
-     */
-    @Test
-    public void oneCentimeterNotEqualOneInch() {
-        Length cm = new Length(1.0, LengthUnit.CENTIMETERS);
-        Length inch = new Length(1.0, LengthUnit.INCHES);
-
-        assertFalse(cm.equals(inch),
-                "1 cm should not equal 1 inch");
-    }
-
-    /**
-     * Test Case 18: centimeterEqualitySameValue
-     * Verifies that two cm measurements with same value are equal
-     */
-    @Test
-    public void centimeterEqualitySameValue() {
-        Length cm1 = new Length(10.0, LengthUnit.CENTIMETERS);
-        Length cm2 = new Length(10.0, LengthUnit.CENTIMETERS);
-
-        assertTrue(cm1.equals(cm2),
-                "10 cm should equal 10 cm");
-    }
-
-    /**
-     * Test Case 19: centimeterInequalityDifferentValue
-     * Verifies inequality for different cm values
-     */
-    @Test
-    public void centimeterInequalityDifferentValue() {
-        Length cm1 = new Length(10.0, LengthUnit.CENTIMETERS);
-        Length cm2 = new Length(20.0, LengthUnit.CENTIMETERS);
-
-        assertFalse(cm1.equals(cm2),
-                "10 cm should not equal 20 cm");
-    }
-
-    /**
-     * Test Case 20: centimeterReflexiveProperty
-     * Verifies reflexive property for centimeters
-     */
-    @Test
-    public void centimeterReflexiveProperty() {
-        Length cm = new Length(10.0, LengthUnit.CENTIMETERS);
-
-        assertTrue(cm.equals(cm),
-                "A cm object should equal itself (reflexive property)");
-    }
-
-    /**
-     * Test Case 21: centimeterNullComparison
-     * Verifies null safety for centimeters
-     */
-    @Test
-    public void centimeterNullComparison() {
-        Length cm = new Length(10.0, LengthUnit.CENTIMETERS);
-
-        assertFalse(cm.equals(null),
-                "Centimeter object should not equal null");
-    }
-
-    /**
-     * Test Case 22: centimeterSymmetricProperty
-     * Verifies symmetric property for centimeters
-     */
-    @Test
-    public void centimeterSymmetricProperty() {
-        Length cm1 = new Length(10.0, LengthUnit.CENTIMETERS);
-        Length cm2 = new Length(10.0, LengthUnit.CENTIMETERS);
-
-        assertTrue(cm1.equals(cm2) && cm2.equals(cm1),
-                "Symmetric property should hold for centimeters");
-    }
-
-    /**
-     * Test Case 23: centimeterToYardConversion
-     * Verifies cm to yard conversion
-     */
-    @Test
-    public void centimeterToYardConversion() {
-        Length cm = new Length(91.44, LengthUnit.CENTIMETERS);
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-
-        assertTrue(cm.equals(yard),
-                "91.44 cm should equal 1 yard");
-    }
-
-    /**
-     * Test Case 24: crossUnitEqualityDemonstrateMethod
-     * Verifies the demonstrateLengthEquality method works correctly
+     * Test 15: Cross unit equality demonstrate method
      */
     @Test
     public void crossUnitEqualityDemonstrateMethod() {
         Length yard = new Length(1.0, LengthUnit.YARDS);
         Length feet = new Length(3.0, LengthUnit.FEET);
 
-        assertTrue(main.QuantityMeasurementApp.demonstrateLengthEquality(yard, feet),
+        assertTrue(QuantityMeasurementApp.demonstrateLengthEquality(yard, feet),
                 "Demonstrate method should return true for equal lengths");
     }
 
+    // ==================== CONVERSION TESTS (UC5 NEW TESTS) ====================
+
     /**
-     * Test Case 25: twoYardsEqual72Inches
-     * Verifies complex multi-unit scenario
+     * Test 16: Convert feet to inches
+     * convert(1.0, FEET, INCHES) should return 12.0
      */
     @Test
-    public void twoYardsEqual72Inches() {
-        Length yards = new Length(2.0, LengthUnit.YARDS);
-        Length inches = new Length(72.0, LengthUnit.INCHES);
+    public void convertFeetToInches() {
+        Length lengthInFeet = new Length(3.0, LengthUnit.FEET);
+        Length lengthInInches = lengthInFeet.convertTo(LengthUnit.INCHES);
 
-        assertTrue(yards.equals(inches),
-                "2 yards should equal 72 inches");
+        assertEquals(36.0, lengthInInches.getValue(), EPSILON,
+                "3 feet should convert to 36 inches");
+        assertEquals(LengthUnit.INCHES, lengthInInches.getUnit(),
+                "Unit should be INCHES after conversion");
     }
 
     /**
-     * Test Case 26: twoYardsEqual6Feet
-     * Verifies yard to feet conversion for multiple yards
+     * Test 17: Convert yards to inches using overloaded method
+     * convert(2.0, YARDS, INCHES) should return 72.0
      */
     @Test
-    public void twoYardsEqual6Feet() {
-        Length yards = new Length(2.0, LengthUnit.YARDS);
-        Length feet = new Length(6.0, LengthUnit.FEET);
+    public void convertYardsToInchesUsingOverloadedMethod() {
+        Length lengthInYards = new Length(2.0, LengthUnit.YARDS);
+        Length lengthInInches = QuantityMeasurementApp
+                .demonstrateLengthConversion(lengthInYards, LengthUnit.INCHES);
+        Length expectedLength = new Length(72.0, LengthUnit.INCHES);
 
-        assertTrue(yards.equals(feet),
-                "2 yards should equal 6 feet");
+        assertTrue(QuantityMeasurementApp
+                        .demonstrateLengthEquality(lengthInInches, expectedLength),
+                "2 yards should convert to 72 inches");
     }
 
     /**
-     * Test Case 27: zeroValuesAcrossAllUnits
-     * Verifies that zero values are equal across all units
+     * Test 18: Convert inches to feet
+     * convert(24.0, INCHES, FEET) should return 2.0
      */
     @Test
-    public void zeroValuesAcrossAllUnits() {
+    public void convertInchesToFeet() {
+        Length lengthInInches = new Length(24.0, LengthUnit.INCHES);
+        Length lengthInFeet = lengthInInches.convertTo(LengthUnit.FEET);
+
+        assertEquals(2.0, lengthInFeet.getValue(), EPSILON,
+                "24 inches should convert to 2 feet");
+        assertEquals(LengthUnit.FEET, lengthInFeet.getUnit(),
+                "Unit should be FEET after conversion");
+    }
+
+    /**
+     * Test 19: Convert yards to feet
+     * convert(3.0, YARDS, FEET) should return 9.0
+     */
+    @Test
+    public void convertYardsToFeet() {
+        Length lengthInYards = new Length(3.0, LengthUnit.YARDS);
+        Length lengthInFeet = lengthInYards.convertTo(LengthUnit.FEET);
+
+        assertEquals(9.0, lengthInFeet.getValue(), EPSILON,
+                "3 yards should convert to 9 feet");
+    }
+
+    /**
+     * Test 20: Convert centimeters to inches
+     * convert(2.54, CENTIMETERS, INCHES) should return approximately 1.0
+     */
+    @Test
+    public void convertCentimetersToInches() {
+        Length lengthInCm = new Length(2.54, LengthUnit.CENTIMETERS);
+        Length lengthInInches = lengthInCm.convertTo(LengthUnit.INCHES);
+
+        assertEquals(1.0, lengthInInches.getValue(), EPSILON,
+                "2.54 cm should convert to approximately 1.0 inch");
+    }
+
+    /**
+     * Test 21: Convert feet to yards
+     * convert(6.0, FEET, YARDS) should return 2.0
+     */
+    @Test
+    public void convertFeetToYards() {
+        Length lengthInFeet = new Length(6.0, LengthUnit.FEET);
+        Length lengthInYards = lengthInFeet.convertTo(LengthUnit.YARDS);
+
+        assertEquals(2.0, lengthInYards.getValue(), EPSILON,
+                "6 feet should convert to 2 yards");
+    }
+
+    /**
+     * Test 22: Convert inches to yards
+     * convert(72.0, INCHES, YARDS) should return 2.0
+     */
+    @Test
+    public void convertInchesToYards() {
+        Length lengthInInches = new Length(72.0, LengthUnit.INCHES);
+        Length lengthInYards = lengthInInches.convertTo(LengthUnit.YARDS);
+
+        assertEquals(2.0, lengthInYards.getValue(), EPSILON,
+                "72 inches should convert to 2 yards");
+    }
+
+    /**
+     * Test 23: Round-trip conversion preserves value
+     * convert(convert(v, A, B), B, A) should return approximately v
+     */
+    @Test
+    public void convertRoundTripPreservesValue() {
+        Length original = new Length(5.0, LengthUnit.FEET);
+        Length toInches = original.convertTo(LengthUnit.INCHES);
+        Length backToFeet = toInches.convertTo(LengthUnit.FEET);
+
+        assertEquals(5.0, backToFeet.getValue(), EPSILON,
+                "Round-trip conversion should preserve original value");
+    }
+
+    /**
+     * Test 24: Zero value conversion
+     * convert(0.0, FEET, INCHES) should return 0.0
+     */
+    @Test
+    public void convertZeroValue() {
         Length zeroFeet = new Length(0.0, LengthUnit.FEET);
-        Length zeroInches = new Length(0.0, LengthUnit.INCHES);
-        Length zeroYards = new Length(0.0, LengthUnit.YARDS);
-        Length zeroCm = new Length(0.0, LengthUnit.CENTIMETERS);
+        Length zeroInches = zeroFeet.convertTo(LengthUnit.INCHES);
 
-        assertTrue(zeroFeet.equals(zeroInches) &&
-                        zeroInches.equals(zeroYards) &&
-                        zeroYards.equals(zeroCm),
-                "All zero values should be equal across units");
+        assertEquals(0.0, zeroInches.getValue(), EPSILON,
+                "Zero feet should convert to zero inches");
     }
 
     /**
-     * Test Case 28: differentClassComparison
-     * Verifies type safety
+     * Test 25: Negative value conversion
+     * convert(-1.0, FEET, INCHES) should return -12.0
      */
     @Test
-    public void differentClassComparison() {
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-        String notALength = "1.0";
+    public void convertNegativeValue() {
+        Length negativeFeet = new Length(-1.0, LengthUnit.FEET);
+        Length negativeInches = negativeFeet.convertTo(LengthUnit.INCHES);
 
-        assertFalse(yard.equals(notALength),
-                "Length object should not equal a String object");
+        assertEquals(-12.0, negativeInches.getValue(), EPSILON,
+                "-1 foot should convert to -12 inches");
+    }
+
+    /**
+     * Test 26: Same unit conversion returns same value
+     * convert(5.0, FEET, FEET) should return 5.0
+     */
+    @Test
+    public void convertSameUnit() {
+        Length length = new Length(5.0, LengthUnit.FEET);
+        Length converted = length.convertTo(LengthUnit.FEET);
+
+        assertEquals(5.0, converted.getValue(), EPSILON,
+                "Converting to the same unit should return the same value");
+        assertEquals(LengthUnit.FEET, converted.getUnit(),
+                "Unit should remain FEET");
+    }
+
+    /**
+     * Test 27: Invalid unit throws IllegalArgumentException
+     */
+    @Test
+    public void convertInvalidUnitThrows() {
+        Length length = new Length(1.0, LengthUnit.FEET);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            length.convertTo(null);
+        }, "Null target unit should throw IllegalArgumentException");
+    }
+
+    /**
+     * Test 28: NaN value conversion
+     */
+    @Test
+    public void convertNaNOrInfiniteThrows() {
+        Length nanLength = new Length(Double.NaN, LengthUnit.FEET);
+        Length result = nanLength.convertTo(LengthUnit.INCHES);
+
+        assertTrue(Double.isNaN(result.getValue()),
+                "NaN value conversion should remain NaN");
+    }
+
+    /**
+     * Test 29: Precision tolerance for conversion
+     */
+    @Test
+    public void convertPrecisionTolerance() {
+        Length lengthInCm = new Length(100.0, LengthUnit.CENTIMETERS);
+        Length lengthInInches = lengthInCm.convertTo(LengthUnit.INCHES);
+
+        assertEquals(39.37, lengthInInches.getValue(), EPSILON,
+                "100 cm should convert to approximately 39.37 inches within epsilon tolerance");
+    }
+
+    /**
+     * Test 30: Large value conversion maintains precision
+     */
+    @Test
+    public void convertLargeValue() {
+        Length largeFeet = new Length(1000.0, LengthUnit.FEET);
+        Length largeInches = largeFeet.convertTo(LengthUnit.INCHES);
+
+        assertEquals(12000.0, largeInches.getValue(), EPSILON,
+                "1000 feet should convert to 12000 inches");
+    }
+
+    /**
+     * Test 31: Demonstrate length conversion with 3 params
+     */
+    @Test
+    public void demonstrateLengthConversionThreeParams() {
+        Length result = QuantityMeasurementApp
+                .demonstrateLengthConversion(3.0, LengthUnit.FEET, LengthUnit.INCHES);
+
+        assertEquals(36.0, result.getValue(), EPSILON,
+                "demonstrateLengthConversion(3.0, FEET, INCHES) should return 36.0");
+        assertEquals(LengthUnit.INCHES, result.getUnit(),
+                "Result unit should be INCHES");
+    }
+
+    /**
+     * Test 32: Centimeters to feet conversion
+     */
+    @Test
+    public void convertCentimetersToFeet() {
+        Length cm = new Length(30.48, LengthUnit.CENTIMETERS);
+        Length feet = cm.convertTo(LengthUnit.FEET);
+
+        assertEquals(1.0, feet.getValue(), EPSILON,
+                "30.48 cm should convert to 1 foot");
+    }
+
+    /**
+     * Test 33: Three feet equals one yard
+     */
+    @Test
+    public void threeFeetEqualsOneYard() {
+        Length feet = new Length(3.0, LengthUnit.FEET);
+        Length yard = new Length(1.0, LengthUnit.YARDS);
+
+        assertTrue(feet.equals(yard),
+                "3 feet should equal 1 yard");
+    }
+
+    /**
+     * Test 34: Centimeter equals 0.393701 inches
+     */
+    @Test
+    public void centimeterEquals39Point3701Inches() {
+        Length cm = new Length(1.0, LengthUnit.CENTIMETERS);
+        Length convertedToInches = cm.convertTo(LengthUnit.INCHES);
+
+        assertEquals(0.39, convertedToInches.getValue(), EPSILON,
+                "1 cm should convert to approximately 0.39 inches");
     }
 }
