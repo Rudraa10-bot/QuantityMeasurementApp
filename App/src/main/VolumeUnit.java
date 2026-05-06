@@ -1,12 +1,14 @@
-public enum WeightUnit implements IMeasurable {
-    KILOGRAM(1.0),
-    GRAM(0.001),
-    TONNE(1000.0),
-    POUND(0.453592);
+package main;
+
+public enum VolumeUnit implements IMeasurable {
+
+    LITRE(1.0),
+    MILLILITRE(0.001),
+    GALLON(3.78541);
 
     private final double conversionFactor;
 
-    WeightUnit(double conversionFactor) {
+    VolumeUnit(double conversionFactor) {
         this.conversionFactor = conversionFactor;
     }
 
@@ -15,11 +17,23 @@ public enum WeightUnit implements IMeasurable {
         return conversionFactor;
     }
 
+    /**
+     * Converts the given value (in this unit) to the base unit (Litre).
+     *
+     * @param value the value in this unit
+     * @return the equivalent value in litres
+     */
     @Override
     public double convertToBaseUnit(double value) {
         return value * conversionFactor;
     }
 
+    /**
+     * Converts the given value (in litres) to this unit.
+     *
+     * @param baseValue the value in litres
+     * @return the equivalent value in this unit
+     */
     @Override
     public double convertFromBaseUnit(double baseValue) {
         return baseValue / conversionFactor;

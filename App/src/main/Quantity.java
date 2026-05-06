@@ -1,30 +1,23 @@
-package main;
+import java.util.Objects;
 
-/**
- * Generic Quantity Class.
- *
- * Supports:
- * - Equality
- * - Conversion
- * - Addition
- *
- * Works with any unit implementing IMeasurable.
- */
 public class Quantity<U extends IMeasurable> {
+
+    private static final double EPSILON = 1e-9;
 
     private final double value;
     private final U unit;
 
+    /**
+     * Constructs a new Quantity with the given value and unit.
+     *
+     * @param value the numerical measurement value
+     * @param unit  the measurement unit (must not be null)
+     * @throws IllegalArgumentException if unit is null
+     */
     public Quantity(double value, U unit) {
-
         if (unit == null) {
-            throw new IllegalArgumentException("Unit cannot be null");
+            throw new IllegalArgumentException("Unit cannot be null.");
         }
-
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Value must be finite");
-        }
-
         this.value = value;
         this.unit = unit;
     }
@@ -38,113 +31,82 @@ public class Quantity<U extends IMeasurable> {
     }
 
     /**
-     * Convert quantity to target unit.
+     * Converts this quantity to the specified target unit.
+     *
+     * @param targetUnit the unit to convert to
+     * @return a new Quantity in the target unit
      */
     public Quantity<U> convertTo(U targetUnit) {
-
-        if (targetUnit == null) {
-            throw new IllegalArgumentException("Target unit cannot be null");
-        }
-
         double baseValue = unit.convertToBaseUnit(value);
-
-        double converted =
-                targetUnit.convertFromBaseUnit(baseValue);
-
-        return new Quantity<>(converted, targetUnit);
+        double convertedValue = targetUnit.convertFromBaseUnit(baseValue);
+        return new Quantity<>(convertedValue, targetUnit);
     }
 
     /**
-     * Add quantity in first operand unit.
+     * Adds another quantity to this quantity.
+     * Result is expressed in this quantity's unit (implicit target unit).
+     *
+     * @param other the other quantity to add
+     * @return a new Quantity representing the sum
      */
     public Quantity<U> add(Quantity<U> other) {
-
-        if (other == null) {
-            throw new IllegalArgumentException("Cannot add null quantity");
-        }
-
         return add(other, this.unit);
     }
 
     /**
-     * Add quantity in specified target unit.
+     * Adds another quantity to this quantity with an explicit target unit.
+     *
+     * @param other      the other quantity to add
+     * @param targetUnit the unit for the result
+     * @return a new Quantity representing the sum in the target unit
      */
-    public Quantity<U> add(
-            Quantity<U> other,
-            U targetUnit) {
-
-        if (other == null) {
-            throw new IllegalArgumentException("Cannot add null quantity");
-        }
-
-        if (targetUnit == null) {
-            throw new IllegalArgumentException("Target unit cannot be null");
-        }
-
-        double thisBase =
-                unit.convertToBaseUnit(value);
-
-        double otherBase =
-                other.unit.convertToBaseUnit(other.value);
-
-        double sumBase =
-                thisBase + otherBase;
-
-        double converted =
-                targetUnit.convertFromBaseUnit(sumBase);
-
-        return new Quantity<>(converted, targetUnit);
+    public Quantity<U> add(Quantity<U> other, U targetUnit) {
+        double thisBase  = this.unit.convertToBaseUnit(this.value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+        double sumBase   = thisBase + otherBase;
+        double resultValue = targetUnit.convertFromBaseUnit(sumBase);
+        return new Quantity<>(resultValue, targetUnit);
     }
 
+    /**
+     * Checks equality between this and another object.
+     * Two quantities are equal if and only if:
+     *  - They are the same object (reflexive), OR
+     *  - The other object is a Quantity of the SAME unit type class
+     *    AND their base-unit values are within epsilon tolerance.
+     *
+     * @param obj the object to compare
+     * @return true if logically equal, false otherwise
+     */
     @Override
     public boolean equals(Object obj) {
-
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj == null) {
-            return false;
-        }
-
-        if (!(obj instanceof Quantity<?>)) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (!(obj instanceof Quantity)) return false;
 
         Quantity<?> other = (Quantity<?>) obj;
 
-        /*
-         * Prevent cross-category comparison
-         * Example:
-         * LengthUnit vs WeightUnit
-         */
-        if (this.unit.getClass() != other.unit.getClass()) {
+        // Cross-category type safety: unit classes must match
+        if (!this.unit.getClass().equals(other.unit.getClass())) {
             return false;
         }
 
-        double thisBase =
-                unit.convertToBaseUnit(value);
+        double thisBase  = this.unit.convertToBaseUnit(this.value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
 
-        double otherBase =
-                other.unit.convertToBaseUnit(other.value);
-
-        return Double.compare(thisBase, otherBase) == 0;
+        return Math.abs(thisBase - otherBase) < EPSILON;
     }
 
     @Override
     public int hashCode() {
-
-        double base =
-                unit.convertToBaseUnit(value);
-
-        return Double.hashCode(base);
+        double baseValue = unit.convertToBaseUnit(value);
+        // Round to avoid floating-point inconsistencies in hash
+        long rounded = Math.round(baseValue / EPSILON);
+        return Objects.hash(unit.getClass(), rounded);
     }
 
     @Override
     public String toString() {
-        return String.format(
-                "Quantity(%.5f, %s)",
-                value,
-                unit.getUnitName());
+        return String.format("Quantity(%.6f, %s)", value, unit.getUnitName());
     }
 }

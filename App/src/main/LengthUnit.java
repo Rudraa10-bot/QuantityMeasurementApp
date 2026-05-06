@@ -1,15 +1,9 @@
-package main;
-
-/**
- * Length units implementing IMeasurable.
- * Base unit = FEET.
- */
 public enum LengthUnit implements IMeasurable {
-
-    FEET(1.0),
-    INCHES(1.0 / 12.0),
-    YARDS(3.0),
-    CENTIMETERS(1.0 / 30.48);
+    INCH(0.0833333),
+    FOOT(1.0),
+    YARD(3.0),
+    CENTIMETRE(0.0328084),
+    MILLIMETRE(0.00328084);
 
     private final double conversionFactor;
 
@@ -24,16 +18,16 @@ public enum LengthUnit implements IMeasurable {
 
     @Override
     public double convertToBaseUnit(double value) {
-        return Math.round(value * conversionFactor * 100000.0) / 100000.0;
+        return value * conversionFactor;
     }
 
     @Override
     public double convertFromBaseUnit(double baseValue) {
-        return Math.round((baseValue / conversionFactor) * 100000.0) / 100000.0;
+        return baseValue / conversionFactor;
     }
 
     @Override
     public String getUnitName() {
-        return this.name();
+        return name().charAt(0) + name().substring(1).toLowerCase();
     }
 }
