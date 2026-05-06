@@ -1,20 +1,20 @@
 package main;
 
 /**
- * QuantityMeasurementApp - UC6: Addition of Two Length Units
+ * QuantityMeasurementApp - UC7: Addition with Target Unit Specification
  *
- * This class extends UC5 by introducing addition operations between
- * length measurements. The Quantity Length API can add two lengths
- * of potentially different units and return the result in the unit
- * of the first operand.
+ * This class extends UC6 by providing flexibility in specifying the unit
+ * for the addition result. Instead of defaulting to the unit of the first
+ * operand, the caller can explicitly specify any supported unit as the
+ * target unit for the result.
  *
- * Example:
- * Adding 1 foot and 12 inches yields 2 feet
- * (based on the unit of the first operand)
+ * Adding 1 foot and 12 inches yields 2 feet (or 24 inches, depending on target unit)
+ * Measurements must belong to the same category (length) but can have different units
+ * Result is returned in the specified target unit
  *
  * @author Developer
  * @version 1.0
- * @since UC6
+ * @since UC7
  */
 public class QuantityMeasurementApp {
 
@@ -60,12 +60,8 @@ public class QuantityMeasurementApp {
      * This class encapsulates a length value along with its unit.
      * Supports equality, conversion, and addition operations.
      *
-     * The result is returned in the unit of the first operand.
-     *
-     * Example:
-     * Length length1 = new Length(3.0, LengthUnit.FEET);
-     * Length length2 = new Length(12.0, LengthUnit.INCHES);
-     * Length result = length1.add(length2); // Result: 4.0 FEET
+     * UC6: add(Length) returns result in unit of first operand
+     * UC7: add(Length, LengthUnit) returns result in specified target unit
      */
     public static class Length {
 
@@ -100,9 +96,8 @@ public class QuantityMeasurementApp {
         /**
          * Converts a length value from the base unit (inches) to the target unit.
          *
-         * This private method mainly came into existence to avoid code duplication
-         * in the conversion process as both the convertTo and add methods require
-         * this functionality.
+         * Private helper method to avoid code duplication in the conversion
+         * process as both the convertTo and add methods require this functionality.
          *
          * @param lengthInInches the length value in inches to convert
          * @param targetUnit     the unit to convert the length into
@@ -133,7 +128,7 @@ public class QuantityMeasurementApp {
         /**
          * Checks equality between this Length and another object.
          *
-         * Overridden Method that implements the Object equals(Object) contract.
+         * Overridden Method implementing the Object equals(Object) contract.
          * Performs reference equality check first, then type validation,
          * and finally delegates to the compare(Length) method.
          *
@@ -170,17 +165,11 @@ public class QuantityMeasurementApp {
         /**
          * Convert this length to the specified target unit.
          *
-         * Public API Method for unit conversion.
-         * Implements the conversion pipeline:
-         * base unit conversion, target unit conversion,
-         * and rounding to maintain precision consistency.
-         *
          * Conversion Pipeline:
          * 1. Validate that targetUnit is not null
          * 2. Convert this instance to the base unit (inches)
          * 3. Convert from inches to targetUnit
-         * 4. Round the result to two decimal places
-         * 5. Return a new Length instance
+         * 4. Return a new Length instance
          *
          * Immutability Guarantee:
          * This method never modifies the receiver. It always returns
@@ -195,56 +184,90 @@ public class QuantityMeasurementApp {
                 throw new IllegalArgumentException("Target unit cannot be null");
             }
 
-            // Step 1: Convert to base unit (inches)
             double baseValue = this.convertToBaseUnit();
-
-            // Step 2: Convert from base unit to target unit
             double convertedValue = convertFromBaseToTargetUnit(baseValue, targetUnit);
-
-            // Step 3: Return new Length instance (immutability)
             return new Length(convertedValue, targetUnit);
         }
 
         /**
-         * Adds another Length to this Length.
+         * UC6 Method: Adds another Length to this Length.
          *
-         * Instance method that adds the given Length to this Length.
          * The result is returned in the unit of this (the first) operand.
+         * Delegates to the addAndConvert private method.
          *
-         * Addition Pipeline:
-         * 1. Validate that thatLength is not null
-         * 2. Convert both lengths to the base unit (inches)
-         * 3. Sum the base unit values
-         * 4. Convert the sum back to the unit of this instance
-         * 5. Round the result to two decimal places
-         * 6. Return a new Length instance with the summed value
-         *
-         * Immutability Guarantee:
-         * This method never modifies either operand. It always returns
-         * a new Length instance, ensuring immutability.
-         *
-         * @param thatLength the Length to add
+         * @param thatLength the Length to add; must not be null
          * @return a new Length representing the sum in this instance's unit
          * @throws IllegalArgumentException if thatLength is null
          */
         public Length add(Length thatLength) {
-            // Validate input
             if (thatLength == null) {
                 throw new IllegalArgumentException("Cannot add null Length");
             }
+            // UC6: result in unit of first operand (this.unit)
+            return addAndConvert(thatLength, this.unit);
+        }
 
-            // Step 1: Convert both to base unit (inches)
+        /**
+         * UC7 Method: Adds another Length to this Length with explicit target unit.
+         *
+         * Adding length to this length with target unit specification.
+         *
+         * Public API Method: This method allows adding two lengths specified
+         * by their numeric values and units. The result is returned as per the unit of
+         * specified target unit.
+         *
+         * This overloaded method maintains backward compatibility with UC6's add()
+         * while adding explicit target unit support. The caller has explicit control
+         * over the result unit rather than relying on implicit defaults.
+         *
+         * @param thatLength the Length to add; must not be null
+         * @param targetUnit the unit to return the sum in; must not be null
+         * @return a new Length representing the sum in the specified target unit
+         * @throws IllegalArgumentException if thatLength or targetUnit is null
+         */
+        public Length add(Length thatLength, LengthUnit targetUnit) {
+            if (thatLength == null) {
+                throw new IllegalArgumentException("Cannot add null Length");
+            }
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit cannot be null");
+            }
+            // UC7: result in explicitly specified targetUnit
+            return addAndConvert(thatLength, targetUnit);
+        }
+
+        /**
+         * Private utility method to perform addition conversion on base unit value.
+         *
+         * Private Utility Method: This method is used internally by the
+         * add(Length) and add(Length, LengthUnit) methods to convert this length
+         * and the length to add into the base unit, sum them up, and convert the
+         * result into the specified target unit.
+         *
+         * This method avoids code duplication in the addition process as both add
+         * methods require this functionality and ensures consistent rounding to
+         * two decimal places across all operations.
+         *
+         * Also maintains immutability by returning a new Length instance without
+         * modifying the original objects.
+         *
+         * @param length     the Length to add
+         * @param targetUnit the unit to return the sum in
+         * @return a new Length representing the sum in the specified target unit
+         */
+        private Length addAndConvert(Length length, LengthUnit targetUnit) {
+            // Step 1: Convert both lengths to base unit (inches)
             double thisInBase = this.convertToBaseUnit();
-            double thatInBase = thatLength.convertToBaseUnit();
+            double thatInBase = length.convertToBaseUnit();
 
             // Step 2: Sum the base unit values
             double sumInBase = thisInBase + thatInBase;
 
-            // Step 3: Convert sum back to the unit of this instance
-            double sumInThisUnit = convertFromBaseToTargetUnit(sumInBase, this.unit);
+            // Step 3: Convert sum to the specified target unit
+            double sumInTargetUnit = convertFromBaseToTargetUnit(sumInBase, targetUnit);
 
-            // Step 4: Return new Length in this unit
-            return new Length(sumInThisUnit, this.unit);
+            // Step 4: Return new immutable Length instance
+            return new Length(sumInTargetUnit, targetUnit);
         }
 
         /**
@@ -303,13 +326,13 @@ public class QuantityMeasurementApp {
     }
 
     /**
-     * Demonstrate length equality between two raw values with units.
+     * Demonstrate length equality between two raw values.
      *
-     * @param value1 the first length value
-     * @param unit1  the unit of the first length value
-     * @param value2 the second length value
-     * @param unit2  the unit of the second length value
-     * @return true if the two lengths are equal, false otherwise
+     * @param value1 first value
+     * @param unit1  first unit
+     * @param value2 second value
+     * @param unit2  second unit
+     * @return true if equal, false otherwise
      */
     public static boolean demonstrateLengthComparison(
             double value1, LengthUnit unit1,
@@ -320,20 +343,15 @@ public class QuantityMeasurementApp {
     }
 
     /**
-     * Demonstrate length conversion from one unit to another.
+     * Demonstrate length conversion. Method Overload 1: raw value with two units.
      *
-     * Method Overload 1: Takes a numeric value and two units.
-     * Used when you have raw values to convert.
-     *
-     * @param value    the length value to convert
-     * @param fromUnit the unit of the length value
-     * @param toUnit   the target unit to convert to
-     * @return a new Length instance representing the converted length
+     * @param value    value to convert
+     * @param fromUnit source unit
+     * @param toUnit   target unit
+     * @return converted Length
      */
     public static Length demonstrateLengthConversion(
-            double value,
-            LengthUnit fromUnit,
-            LengthUnit toUnit) {
+            double value, LengthUnit fromUnit, LengthUnit toUnit) {
         Length length = new Length(value, fromUnit);
         Length converted = length.convertTo(toUnit);
         System.out.println(value + " " + fromUnit + " = " + converted);
@@ -341,14 +359,11 @@ public class QuantityMeasurementApp {
     }
 
     /**
-     * Demonstrate length conversion from a Length instance to another unit.
+     * Demonstrate length conversion. Method Overload 2: existing Length to another unit.
      *
-     * Method Overload 2: Takes an existing Length object and target unit.
-     * Used when you already have a Length instance.
-     *
-     * @param length the Length instance to convert
-     * @param toUnit the target unit to convert to
-     * @return a new Length instance representing the converted length
+     * @param length existing Length
+     * @param toUnit target unit
+     * @return converted Length
      */
     public static Length demonstrateLengthConversion(Length length, LengthUnit toUnit) {
         Length converted = length.convertTo(toUnit);
@@ -357,13 +372,11 @@ public class QuantityMeasurementApp {
     }
 
     /**
-     * Demonstrate addition of second QuantityLength to first QuantityLength.
+     * UC6: Demonstrate addition of two lengths. Result in unit of first operand.
      *
-     * The result is returned in the unit of the first operand.
-     *
-     * @param length1 the first QuantityLength instance
-     * @param length2 the second QuantityLength instance
-     * @return a new QuantityLength instance representing the sum of the two lengths
+     * @param length1 the first Length instance
+     * @param length2 the second Length instance
+     * @return sum in unit of first operand
      */
     public static Length demonstrateLengthAddition(Length length1, Length length2) {
         Length result = length1.add(length2);
@@ -372,57 +385,71 @@ public class QuantityMeasurementApp {
     }
 
     /**
+     * UC7: Demonstrate addition of two lengths with explicit target unit.
+     *
+     * Demonstrate addition of second QuantityLength to first QuantityLength
+     * with target unit.
+     *
+     * @param length1    the first QuantityLength instance
+     * @param length2    the second QuantityLength instance
+     * @param targetUnit the target unit for the result
+     * @return a new Length instance representing the sum in the target unit
+     */
+    public static Length demonstrateLengthAddition(
+            Length length1, Length length2, LengthUnit targetUnit) {
+        Length result = length1.add(length2, targetUnit);
+        System.out.println(length1 + " + " + length2
+                + " in " + targetUnit + " = " + result);
+        return result;
+    }
+
+    /**
      * Main method to demonstrate extended unit support.
      */
     public static void main(String[] args) {
-        System.out.println("=== UC6: Addition of Two Length Units Demo ===\n");
+        System.out.println("=== UC7: Addition with Target Unit Specification Demo ===\n");
 
-        // Demo 1: Same unit addition - Feet + Feet
-        Length feet1 = new Length(1.0, LengthUnit.FEET);
-        Length feet2 = new Length(2.0, LengthUnit.FEET);
-        demonstrateLengthAddition(feet1, feet2);
-        // Expected: 3.0 FEET
-
-        // Demo 2: Cross-unit addition - Feet + Inches (result in FEET)
-        Length foot = new Length(1.0, LengthUnit.FEET);
-        Length inches12 = new Length(12.0, LengthUnit.INCHES);
-        demonstrateLengthAddition(foot, inches12);
-        // Expected: 2.0 FEET
-
-        // Demo 3: Cross-unit addition - Inches + Feet (result in INCHES)
-        Length inches = new Length(12.0, LengthUnit.INCHES);
         Length oneFoot = new Length(1.0, LengthUnit.FEET);
-        demonstrateLengthAddition(inches, oneFoot);
-        // Expected: 24.0 INCHES
-
-        // Demo 4: Cross-unit addition - Yards + Feet (result in YARDS)
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-        Length threeFeet = new Length(3.0, LengthUnit.FEET);
-        demonstrateLengthAddition(yard, threeFeet);
-        // Expected: 2.0 YARDS
-
-        // Demo 5: Cross-unit addition - Inches + Yards (result in INCHES)
-        Length inches36 = new Length(36.0, LengthUnit.INCHES);
+        Length twelveInches = new Length(12.0, LengthUnit.INCHES);
         Length oneYard = new Length(1.0, LengthUnit.YARDS);
-        demonstrateLengthAddition(inches36, oneYard);
-        // Expected: 72.0 INCHES
-
-        // Demo 6: Cross-unit addition - CM + Inches (result in CENTIMETERS)
+        Length threeFeet = new Length(3.0, LengthUnit.FEET);
+        Length inches36 = new Length(36.0, LengthUnit.INCHES);
         Length cm254 = new Length(2.54, LengthUnit.CENTIMETERS);
         Length oneInch = new Length(1.0, LengthUnit.INCHES);
-        demonstrateLengthAddition(cm254, oneInch);
-        // Expected: ~5.08 CENTIMETERS
-
-        // Demo 7: Identity element - Feet + 0 Inches
-        Length fiveFoott = new Length(5.0, LengthUnit.FEET);
-        Length zeroInches = new Length(0.0, LengthUnit.INCHES);
-        demonstrateLengthAddition(fiveFoott, zeroInches);
-        // Expected: 5.0 FEET
-
-        // Demo 8: Negative value addition
         Length fiveFeet = new Length(5.0, LengthUnit.FEET);
         Length negTwoFeet = new Length(-2.0, LengthUnit.FEET);
-        demonstrateLengthAddition(fiveFeet, negTwoFeet);
-        // Expected: 3.0 FEET
+
+        // Demo 1: target = FEET
+        demonstrateLengthAddition(oneFoot, twelveInches, LengthUnit.FEET);
+        // Output: 2.0 FEET
+
+        // Demo 2: target = INCHES
+        demonstrateLengthAddition(oneFoot, twelveInches, LengthUnit.INCHES);
+        // Output: 24.0 INCHES
+
+        // Demo 3: target = YARDS (different from both operands)
+        demonstrateLengthAddition(oneFoot, twelveInches, LengthUnit.YARDS);
+        // Output: ~0.67 YARDS
+
+        // Demo 4: 1 YARD + 3 FEET in YARDS
+        demonstrateLengthAddition(oneYard, threeFeet, LengthUnit.YARDS);
+        // Output: 2.0 YARDS
+
+        // Demo 5: 36 INCHES + 1 YARD in FEET
+        demonstrateLengthAddition(inches36, oneYard, LengthUnit.FEET);
+        // Output: 6.0 FEET
+
+        // Demo 6: 2.54 CM + 1 INCH in CENTIMETERS
+        demonstrateLengthAddition(cm254, oneInch, LengthUnit.CENTIMETERS);
+        // Output: ~5.08 CENTIMETERS
+
+        // Demo 7: 5 FEET + 0 INCHES in YARDS
+        demonstrateLengthAddition(fiveFeet,
+                new Length(0.0, LengthUnit.INCHES), LengthUnit.YARDS);
+        // Output: ~1.67 YARDS
+
+        // Demo 8: 5 FEET + (-2 FEET) in INCHES
+        demonstrateLengthAddition(fiveFeet, negTwoFeet, LengthUnit.INCHES);
+        // Output: 36.0 INCHES
     }
 }
